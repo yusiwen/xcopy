@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 	"os"
+
+	"github.com/gabriel-vasile/mimetype"
 )
 
 func Send(host string, port int, debug bool) {
@@ -19,6 +21,13 @@ func Send(host string, port int, debug bool) {
 		log.Fatal(err)
 		return
 	}
+
+	mtype := mimetype.Detect(message)
+	if !mtype.Is("text/plain") {
+		fmt.Println("only text messages are supported")
+		return
+	}
+
 	var size int64
 	size = int64(len(message))
 
