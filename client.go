@@ -11,7 +11,25 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 )
 
-func Send(host string, port int, debug bool) {
+func checkText(mimeType *mimetype.MIME) bool {
+	if mimeType == nil {
+		return false
+	}
+
+	fmt.Printf("MIME: %s, Parent: %s\n", mimeType, mimeType.Parent())
+	if mimeType.Is("text/plain") {
+		return true
+	} else {
+		for mtype := mimeType; mtype != nil; mtype = mtype.Parent() {
+			if mtype.Is("text/plain") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func Send(host string, port int, debug bool, dryRun bool) {
 	message, err := io.ReadAll(os.Stdin)
 	if err == nil {
 		if debug {
@@ -22,14 +40,17 @@ func Send(host string, port int, debug bool) {
 		return
 	}
 
-	mtype := mimetype.Detect(message)
-	if !mtype.Is("text/plain") {
-		fmt.Println("only text messages are supported")
-		return
+	detectedMIME := mimetype.Detect(message)
+	if !checkText(detectedMIME) {
+		println("Only text message is supported currently")
+		os.Exit(1)
 	}
 
-	var size int64
-	size = int64(len(message))
+	if dryRun {
+		os.Exit(0)
+	}
+
+	size := int64(len(message))
 
 	tcpServer, err := net.ResolveTCPAddr(TYPE, fmt.Sprintf("%s:%d", host, port))
 

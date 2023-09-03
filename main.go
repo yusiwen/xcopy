@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
+
+	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -11,6 +12,7 @@ const (
 )
 
 var debug = false
+var dryRun = false
 
 func main() {
 	var host string
@@ -67,9 +69,15 @@ func main() {
 						Value:       false,
 						Destination: &debug,
 					},
+					&cli.BoolFlag{
+						Name:        "dry-run",
+						Aliases:     []string{"n"},
+						Value:       false,
+						Destination: &dryRun,
+					},
 				},
 				Action: func(c *cli.Context) error {
-					Send(host, port, debug)
+					Send(host, port, debug, dryRun)
 					return nil
 				},
 			},
